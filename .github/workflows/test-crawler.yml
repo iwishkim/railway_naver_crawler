@@ -31,11 +31,17 @@ jobs:
             -e DATA_DIR="/data" \
             railway-naver-crawler:test
 
+      - name: Show generated files
+        if: always()
+        run: |
+          echo "생성된 파일 확인"
+          find output -maxdepth 5 -type f -print || true
+
       - name: Upload CSV artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: crawler-csv-output
-          path: output/*.csv
+          path: output/
           if-no-files-found: warn
           retention-days: 7
