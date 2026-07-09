@@ -1,0 +1,41 @@
+name: Test Crawler
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-crawler:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t railway-naver-crawler:test .
+
+      - name: Prepare output directory
+        run: mkdir -p output
+
+      - name: Run crawler test
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}/output:/data" \
+            -e TARGET="석촌동" \
+            -e REGIONS="석촌동" \
+            -e KEYWORD_LIMIT="3" \
+            -e MAX_WORKERS="1" \
+            -e MAX_SCROLL="5" \
+            -e HEADLESS="true" \
+            -e DATA_DIR="/data" \
+            railway-naver-crawler:test
+
+      - name: Upload CSV artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crawler-csv-output
+          path: output/*.csv
+          if-no-files-found: warn
+          retention-days: 7
